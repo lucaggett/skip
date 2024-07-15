@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1 class="text-2xl mb-4">Add Entries</h1>
+    <div class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
+        <div class="w-full lg:w-1/2">
+            <h2 class="text-xl mb-2">Add Student</h2>
+            <form method="POST" class="space-y-4">
+                <input type="text" name="student_name" placeholder="Student Name" class="border p-2 w-full" required>
+                <input type="text" name="phone" placeholder="Phone Number" class="border p-2 w-full" required>
+                <input type="text" name="emergency_contact" placeholder="Emergency Contact" class="border p-2 w-full" required>
+                <textarea name="comment" placeholder="Comment" class="border p-2 w-full"></textarea>
+                <button type="submit" class="bg-blue-500 text-white p-2 w-full">Add Student</button>
+            </form>
+        </div>
+        <div class="w-full lg:w-1/2">
+            <h2 class="text-xl mb-2">Add Teacher</h2>
+            <form method="POST" class="space-y-4">
+                <input type="text" name="teacher_name" placeholder="Teacher Name" class="border p-2 w-full" required>
+                <button type="submit" class="bg-green-500 text-white p-2 w-full">Add Teacher</button>
+            </form>
+        </div>
+    </div>
+{% endblock %}

@@ -1,0 +1,22 @@
+.student-card {
+    cursor: move;
+}
+
+.teacher-group {
+    min-height: 150px;
+    transition: background-color 0.3s ease;
+}
+
+.teacher-group:hover {
+    background-color: #d4f4dd;
+}
+
+.assigned-students {
+    background-color: #f0fff4;
+    border: 2px dashed #4caf50;
+    transition: background-color 0.3s ease;
+}
+
+.assigned-students:hover {
+    background-color: #e8f5e9;
+}

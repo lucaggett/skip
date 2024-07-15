@@ -1,0 +1,147 @@
+{% extends "base.html" %}
+{% block content %}
+    <h1 class="text-2xl mb-4">Ski Groups</h1>
+    <div class="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-4">
+        <div class="w-full lg:w-1/2">
+            <h2 class="text-xl mb-2">Available Students</h2>
+            <div id="students" class="border p-2 grid grid-cols-1 gap-4 bg-white rounded shadow">
+                {% for student in students %}
+                    {% set assigned = False %}
+                    {% for assignment in group_assignments %}
+                        {% if student[0] == assignment[0] %}
+                            {% set assigned = True %}
+                        {% endif %}
+                    {% endfor %}
+                    {% if not assigned %}
+                        <div draggable="true" data-id="{{ student[0] }}"
+                             class="student-card p-4 bg-blue-100 shadow rounded mb-4">
+                            <h3 class="text-lg">{{ student[1] }}</h3>
+                            <p>Phone: {{ student[2] }}</p>
+                            <p>Emergency Contact: {{ student[3] }}</p>
+                            <p>Comment: {{ student[4] }}</p>
+                        </div>
+                    {% endif %}
+                {% endfor %}
+            </div>
+        </div>
+        <div class="w-full lg:w-1/2">
+            <h2 class="text-xl mb-2">Teachers and Assigned Students</h2>
+            <div id="teachers" class="space-y-4">
+                {% for teacher in teachers %}
+                    <div class="teacher-group border p-4 rounded bg-green-50 shadow">
+                        <h3 class="text-lg">{{ teacher[1] }}</h3>
+                        <div data-id="{{ teacher[0] }}"
+                             class="assigned-students border-dashed border-2 border-green-400 p-2 mt-2 rounded bg-green-100 min-h-[100px]">
+                            {% for assignment in group_assignments %}
+                                {% if assignment[5] == teacher[0] %}
+                                    <div draggable="true" data-id="{{ assignment[0] }}"
+                                         class="student-card p-4 bg-blue-100 shadow rounded mb-4">
+                                        <h3 class="text-lg">{{ assignment[1] }}</h3>
+                                        <p>Phone: {{ assignment[2] }}</p>
+                                        <p>Emergency Contact: {{ assignment[3] }}</p>
+                                        <p>Comment: {{ assignment[4] }}</p>
+                                    </div>
+                                {% endif %}
+                            {% endfor %}
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </div>
+    <script>
+    document.addEventListener('DOMContentLoaded', () => {
+        // Function to handle drag start
+        const handleDragStart = (e) => {
+            e.dataTransfer.setData('text/plain', e.target.dataset.id);
+            e.dataTransfer.effectAllowed = 'move';
+            e.target.classList.add('dragging');
+        };
+
+        // Function to handle drag over
+        const handleDragOver = (e) => {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+        };
+
+        // Function to handle drop
+        const handleDrop = (e) => {
+            e.preventDefault();
+            const studentId = e.dataTransfer.getData('text/plain');
+            const teacherId = e.target.dataset.id || e.target.closest('.assigned-students').dataset.id;
+
+            if (studentId && teacherId) {
+                fetch('/assign_group', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({studentId, teacherId})
+                }).then(response => {
+                    if (response.ok) {
+                        const studentCard = document.querySelector(`.student-card[data-id="${studentId}"]`);
+                        const target = e.target.classList.contains('assigned-students') ? e.target : e.target.closest('.assigned-students');
+
+                        // Remove the student from any existing teacher list
+                        document.querySelectorAll('.assigned-students .student-card').forEach(student => {
+                            if (student.dataset.id === studentId) {
+                                student.remove();
+                            }
+                        });
+
+                        // Clone and append the student card to the new teacher list
+                        const newStudentCard = studentCard.cloneNode(true);
+                        newStudentCard.classList.remove('dragging');
+                        addDragAndDropListeners(newStudentCard); // Reassign event listeners
+                        target.appendChild(newStudentCard);
+
+                        // Remove the original card from available students
+                        if (studentCard.closest('#students')) {
+                            studentCard.remove();
+                        }
+
+                        console.log(`Successfully assigned student ${studentId} to teacher ${teacherId}`);
+                    } else {
+                        console.log(`Failed to assign student ${studentId} to teacher ${teacherId}`);
+                    }
+                }).catch(error => {
+                    console.error('Error:', error);
+                });
+            }
+        };
+
+        // Function to add drag and drop event listeners to an element
+        const addDragAndDropListeners = (element) => {
+            element.addEventListener('dragstart', handleDragStart);
+            element.addEventListener('dragend', (e) => e.target.classList.remove('dragging'));
+        };
+
+        // Assign event listeners to all initial student cards
+        document.querySelectorAll('.student-card').forEach(item => {
+            addDragAndDropListeners(item);
+        });
+
+        // Assign event listeners to all drop targets
+        document.querySelectorAll('.assigned-students').forEach(teacherList => {
+            teacherList.addEventListener('dragover', handleDragOver);
+            teacherList.addEventListener('drop', handleDrop);
+        });
+
+        // Remove already assigned students from the available list on page load
+        const assignedStudents = document.querySelectorAll('.assigned-students .student-card');
+        assignedStudents.forEach(student => {
+            const studentId = student.dataset.id;
+            const studentElement = document.querySelector(`#students .student-card[data-id="${studentId}"]`);
+            if (studentElement) {
+                studentElement.remove();
+            }
+        });
+
+        // Hide the "Available Students" section if it is empty
+        const studentsSection = document.querySelector('#students');
+        if (studentsSection && studentsSection.children.length === 0) {
+            studentsSection.parentElement.style.display = 'none';
+        }
+    });
+</script>
+{% endblock %}

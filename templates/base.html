@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.1.2/dist/tailwind.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <title>Ski Camp Tracker</title>
+</head>
+<body class="bg-gray-100 p-6">
+    <nav class="bg-white p-4 rounded shadow-md mb-6">
+        <ul class="flex justify-between">
+            <li><a href="{{ url_for('add_entries') }}" class="text-blue-500 hover:underline">Add Entries</a></li>
+            <li><a href="{{ url_for('ski_groups') }}" class="text-blue-500 hover:underline">Ski Groups</a></li>
+        </ul>
+    </nav>
+    <div class="container mx-auto mt-6">
+        {% block content %}{% endblock %}
+    </div>
+</body>
+</html>
